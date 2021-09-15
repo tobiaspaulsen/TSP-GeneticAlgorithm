@@ -1,6 +1,6 @@
 import numpy as np
 from plotting_utils.plotting_utils import plot_tour
-import time
+from general_tools import *
 
 from general_tools import *
 
@@ -47,22 +47,6 @@ def hill_climbing(cities, distances):
     return [cities[i] for i in best], best_dist
 
 
-def standard_deviation(values, avg):
-    """
-    Calculates the standard deviation of given values.
-    Args:
-        values (List): containing numbers
-        avg (float): the average
-
-    Returns:
-        standard deviation (float)
-    """
-    tot_squared_dev = 0
-    for val in values:
-        tot_squared_dev += (val - avg)**2
-    return (tot_squared_dev / len(values))**0.5
-
-
 def measure_hill_climbing(number_of_runs, cities, distances):
     """
     Runs the hill climbing algorithm n times to measure how well it does
@@ -87,10 +71,15 @@ def main():
     cities, distances = read_file("european_cities.csv")
     best = hill_climbing(cities, distances)
     plot_tour(best[0], show_map=True)
+    print(f"Best:                {'->'.join(best[0])}")
+    print(f"Best distance:       {best[1]}")
+
     #subset_10 = make_subset(cities, distances, 0, 10)
     #measure_hill_climbing(20, *subset_10)
     #print("\n\n\n\n")
     #measure_hill_climbing(20, cities, distances)
 
 
-main()
+if __name__ == '__main__':
+    main()
+

@@ -10,8 +10,8 @@ def initiate_population(size, cities, distances):
     Function that generates a random population
     Args:
         size (int): Population size
-        cities: List of all cities to visit
-        distances (2d-list): table over distances
+        cities: Array of all cities to visit
+        distances (2d-array): table over distances
 
     Returns:
         List of tuples containing the random individuals and their distance
@@ -22,7 +22,7 @@ def initiate_population(size, cities, distances):
 
 def tournament_selection(population, pop_size, tournament_size=0):
     """
-    Function that performs a tournament_selection on the population. Creates
+    Function that performs a tournament selection on the population. Creates
     tournaments of given size and adds the winner of the tournaments in a list.
     Args:
         population (list)
@@ -35,9 +35,11 @@ def tournament_selection(population, pop_size, tournament_size=0):
     selected = []
     if tournament_size == 0:
         tournament_size = pop_size // 5  # If size of tournament isn't given it's set to 20% of population size
+
     for i in range(pop_size):
         tournament = [population[np.random.randint(pop_size)] for _ in range(tournament_size)]
         selected.append(get_best(tournament))
+
     return selected
 
 
@@ -57,6 +59,7 @@ def ranked_selection(population, pop_size):
     ranks = [i for i in range(pop_size)]
     sum_ranks = sum(ranks)
     chances = [i/sum_ranks for i in ranks]
+
     return [sorted_pop[i] for i in np.random.choice(ranks, pop_size, p=chances)]
 
 
@@ -100,6 +103,7 @@ def pmx(a, b, start, stop):
     for i in range(len(child)):
         if child[i] is None:
             child[i] = b[i]
+
     return child
 
 
@@ -115,6 +119,7 @@ def pmx_pair(a, b):
     """
     start = np.random.randint(0, len(a) // 2)
     stop = start + len(a) // 2
+
     return pmx(a, b, start, stop), pmx(b, a, start, stop)
 
 
@@ -129,6 +134,7 @@ def insert_mutation(permutation):
     """
     i, j = np.random.choice(len(permutation), 2, replace=False)
     permutation.insert(i + 1, permutation.pop(j))
+
     return permutation
 
 
@@ -139,7 +145,7 @@ def genetic_algorithm(cities, distances, pop_size, p_mutation, num_gens):
     crossover for crossover. Insert-mutation for mutation and (µ+λ)-selection
     for survival selection.
     Args:
-    cities:                  List of all cities to visit
+        cities:              List of all cities to visit
         distances (2d-list): Table over distances
         pop_size (int):      Population size, should be an even number
         p_mutation (float):  Chance of mutation
@@ -166,17 +172,21 @@ def genetic_algorithm(cities, distances, pop_size, p_mutation, num_gens):
         offspring = []
         for i in range(0, pop_size, 2):
             offspring.extend(pmx_pair(parents[i][0], parents[i+1][0]))
+
         for child in offspring:
             if random.random() < p_mutation:
                 insert_mutation(child)
             population.append((child, measure_distance(child, distances)))
+
         population = survivor_selection(population, pop_size)
+
     best = get_best(population)
     best_of_each_gen.append(best[1])
+
     return [cities[i] for i in best[0]], best[1], best_of_each_gen
 
 
-def measure_genetic(number_of_runs, pop_size, num_gens, cities, distances):
+def measure_genetic(number_of_runs, pop_size, num_gens, p_mutation, cities, distances):
     """
     Method that runs the genetic algorithm several times and measures how well it
     does. It calculates the average and standard deviation of all the runs as well
@@ -185,6 +195,7 @@ def measure_genetic(number_of_runs, pop_size, num_gens, cities, distances):
         number_of_runs (int)
         pop_size (int): Population size
         num_gens (int): Number of generations
+        p_mutation (float): Chance of mutation
         cities: List of all cities to visit
         distances (2d-list): table over distances
     """
@@ -195,7 +206,7 @@ def measure_genetic(number_of_runs, pop_size, num_gens, cities, distances):
 
     for _ in range(number_of_runs):
         start = time.time()
-        result = genetic_algorithm(cities, distances, pop_size, 0.5, num_gens)
+        result = genetic_algorithm(cities, distances, pop_size, p_mutation, num_gens)
         stop = time.time()
         total_dist += result[1]
         results.append(result[:2])
@@ -203,10 +214,10 @@ def measure_genetic(number_of_runs, pop_size, num_gens, cities, distances):
         total_time += (stop - start)
 
     print(f"\nResults of genetic algorithm over {number_of_runs} runs")
-    print(f"Population: {pop_size}")
+    print(f"Population:            {pop_size}")
     print(f"Number of generations: {num_gens}")
-    print(f"Chance of mutations: {50}%")
-    print(f"Average time: {total_time/number_of_runs}")
+    print(f"Chance of mutations:   {p_mutation*100}%")
+    print(f"Average time:          {total_time/number_of_runs} s")
     print_info(results, total_dist, number_of_runs)
 
     average_of_generations = [0]*num_gens
@@ -222,11 +233,11 @@ def genetic_main():
     """
     cities, distances = read_file("european_cities.csv")
     # genetic_algorithm(cities, distances, 200, 0.5, 100)
-    measure_genetic(20, 50, 150, cities, distances)
+    measure_genetic(20, 50, 150, 0.5, cities, distances)
     print("\n\n\n\n")
-    measure_genetic(20, 100, 150, cities, distances)
-    print("\n\n\n\n")
-    measure_genetic(20, 300, 150, cities, distances)
+    measure_genetic(20, 100, 150, 0.5, cities, distances)
+    # print("\n\n\n\n")
+    # measure_genetic(20, 300, 150, cities, distances)
     plt.title("Genetic algorithm over 150 generations:")
     plt.ylabel("Distance")
     plt.xlabel("Generations")
@@ -234,4 +245,5 @@ def genetic_main():
     plt.show()
 
 
-genetic_main()
+if __name__ == '__main__':
+    genetic_main()

@@ -1,8 +1,6 @@
 import numpy as np
 from itertools import permutations
 import time
-import random
-from plotting_utils.plotting_utils import plot_tour
 from general_tools import *
 
 
@@ -20,11 +18,9 @@ def exhaustive_search(cities, distances):
         Tuple containing the cities in the shortest order and the
         tours distance.
     """
-    #Should use itertools.combinations to save memory
-    combinations = permutations(range(1, len(cities)))
     shortest_dist = float("inf")
     best = None
-    for comb in combinations:
+    for comb in permutations(range(1, len(cities))):
         permutation = (0,) + comb
         dist = measure_distance(permutation, distances)
         if dist < shortest_dist:
@@ -35,21 +31,23 @@ def exhaustive_search(cities, distances):
 
 def main():
     cities, distances = read_file("european_cities.csv")
-    subset = make_subset(cities, distances, 0, 10)
+    sub_cities = cities[0:10]
+    sub_distances = distances[0:10, 0:10]
 
     start = time.time()
-    tour, distance = exhaustive_search(*subset)
+    tour, distance = exhaustive_search(sub_cities, sub_distances)
     search_time = time.time() - start
-    print("Shortest tour:          ", " -> ".join(tour), "->")
-    print("Distance :              ", distance)
-    print("Time to calculate:      ", search_time)
+    print(f"Shortest tour:                                 {' -> '.join(tour)} ->")
+    print(f"Distance :                                     {distance}")
+    print(f"Time to calculate:                             {search_time} s")
 
     # Calculate time for all cities:
     fac_10 = np.math.factorial(10)
     fac_24 = np.math.factorial(24)
     
     time_to_calculate_24 = search_time * fac_24 / fac_10
-    print("Estimated time for all: ", time_to_calculate_24)
+    print(f"Estimated time for all based on time for 10:   {time_to_calculate_24} s")
 
 
-main()
+if __name__ == '__main__':
+    main()

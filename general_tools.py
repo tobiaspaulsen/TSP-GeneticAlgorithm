@@ -2,46 +2,17 @@ import numpy as np
 
 
 def read_file(csv_file):
-    # Should use np.genfromtxt
-
     """
     Reads in cities and distances from csv file
     Args:
         csv_file (str): filename
 
     Returns:
-        Tuple containing cities on index 0 and distances on index 1
+        Tuple containing names of cities and np.array of distances
     """
-    distances = []
-    with open(csv_file) as f:
-        cities = f.readline().split(";")
-        cities[-1] = cities[-1].strip()
-        for line in f:
-            distances.append([float(n) for n in line.split(";")])
+    cities = np.genfromtxt(csv_file, max_rows=1, dtype=str, delimiter=";")
+    distances = np.genfromtxt(csv_file, skip_header=True, dtype=float, delimiter=";")
     return cities, distances
-    """distances = np.genfromtxt("european_cities.csv", dtype=None, names=True, delimiter=";")
-    cities = distances.dtype.names"""
-    return cities, distances
-
-
-def make_subset(cities, distances, start, stop):
-    """
-    Makes a subset of input
-    Args:
-        cities: list of cities to make subset
-        distances (2d-list): input table over distances between cities
-        start (int): start index
-        stop (int): stop index
-
-    Returns:
-        Tuple containing subset
-    """
-    sub_cities = cities[start: stop]
-    sub_distances = distances[start: stop]
-    for i in range(len(sub_distances)):
-        sub_distances[i] = sub_distances[i][start: stop]
-
-    return sub_cities, sub_distances
 
 
 def measure_distance(permutation, distances):
@@ -89,26 +60,7 @@ def average_dist(population):
     Returns:
         Average distance of the individuals in the population
     """
-    tot = 0
-    for i in population:
-        tot += i[1]
-    return tot/len(population)
-
-
-def standard_deviation(values, avg):
-    """
-    Calculates the standard deviation of given values.
-    Args:
-        values (List): containing numbers
-        avg (float): the average
-
-    Returns:
-        standard deviation (float)
-    """
-    tot_squared_dev = 0
-    for val in values:
-        tot_squared_dev += (val - avg)**2
-    return (tot_squared_dev / len(values))**0.5
+    return np.average([i[1] for i in population])
 
 
 def print_info(results, total_dist, number_of_runs):
@@ -120,7 +72,7 @@ def print_info(results, total_dist, number_of_runs):
         number_of_runs (int): How many times the algorithm ran
     """
     average = total_dist / number_of_runs
-    sd = standard_deviation([tup[1] for tup in results], average)
+    std = np.std([tup[1] for tup in results])
 
     best_dist = float("inf")
     worst_dist = 0
@@ -134,9 +86,9 @@ def print_info(results, total_dist, number_of_runs):
             worst_tour = tour
             worst_dist = dist
 
-    print(f"\nBest: {'->'.join(best_tour)}")
-    print(f"Best distance: {best_dist}")
-    print(f"\nWorst: {'->'.join(worst_tour)}")
-    print(f"Worst distance: {worst_dist}")
-    print(f"\nAverage distance: {average}")
-    print(f"Standard deviation: {sd}")
+    print(f"\nBest:                {'->'.join(best_tour)}")
+    print(f"Best distance:       {best_dist}")
+    print(f"\nWorst:               {'->'.join(worst_tour)}")
+    print(f"Worst distance:      {worst_dist}")
+    print(f"\nAverage distance:    {average}")
+    print(f"Standard deviation:  {std}")
